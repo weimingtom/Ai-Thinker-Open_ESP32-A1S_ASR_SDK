@@ -23,7 +23,7 @@
 #include "esp_ns.h"
 
 #define DEFAULT_VREF    1100
-#define NO_OF_SAMPLES   64          //Multisampling
+#define NO_OF_SAMPLES   128          //Multisampling
 #define NS_FRAME_BYTES     (NS_FRAME_LENGTH_MS * 16 * 2)
 
 static esp_adc_cal_characteristics_t *adc_chars;
@@ -51,7 +51,7 @@ void noise_suppression(void *arg)
         i2s_read(I2S_NUM_1, ns_in, 2 * NS_FRAME_BYTES, &bytes_read, portMAX_DELAY);
 
         for (int i = 0; i < NS_FRAME_BYTES / 2; i++) {
-            ns_in_mono[i] = ns_in[2 * i + 1];
+            ns_in_mono[i] = ns_in[2 * i];
         }
 #endif
         ns_process(ns_inst, ns_in_mono, ns_out);
