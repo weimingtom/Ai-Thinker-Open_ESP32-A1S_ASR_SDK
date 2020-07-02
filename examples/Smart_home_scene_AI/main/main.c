@@ -13,7 +13,6 @@
 #include "my_smartconfig.h"
 #include "my_tcp_server.h"
 
-
 #include "residual.h"
 #include "household_food.h"
 #include "hazardous.h"
@@ -23,33 +22,46 @@
 
 #define LED_GPIO 22
 
-static const char *TAG="main";
+static const char *TAG = "main";
 
 void led_init(int gpio)
 {
     gpio_config_t io_conf;
-    io_conf.intr_type = (gpio_int_type_t) GPIO_PIN_INTR_DISABLE;
+    io_conf.intr_type = (gpio_int_type_t)GPIO_PIN_INTR_DISABLE;
     io_conf.mode = GPIO_MODE_OUTPUT;
-    io_conf.pull_up_en = (gpio_pullup_t) 1;
+    io_conf.pull_up_en = (gpio_pullup_t)1;
 
     uint64_t test = ((uint64_t)1 << gpio);
     io_conf.pin_bit_mask = test;
     gpio_config(&io_conf);
+#ifdef CONFIG_AI_ESP32_AUDIO_KIT_V2_2_BOARD
+    gpio_set_level(gpio, true);
+#else
     gpio_set_level(gpio, false);
+#endif
 }
 
 void led_on(int gpio)
 {
+#ifdef CONFIG_AI_ESP32_AUDIO_KIT_V2_2_BOARD
+    gpio_set_level(gpio, false);
+#else
     gpio_set_level(gpio, true);
+#endif
 }
 
 void led_off(int gpio)
 {
+#ifdef CONFIG_AI_ESP32_AUDIO_KIT_V2_2_BOARD
+    gpio_set_level(gpio, true);
+#else
     gpio_set_level(gpio, false);
+#endif
 }
-typedef struct {
-    char* name;
-    const uint16_t* data;
+typedef struct
+{
+    char *name;
+    const uint16_t *data;
     int length;
 } dac_audio_item_t;
 
@@ -61,25 +73,24 @@ dac_audio_item_t playlist[] = {
     {"wake_up_prompt_tone", wake_up_prompt_tone, sizeof(wake_up_prompt_tone)},
 };
 
-esp_err_t iot_dac_audio_play(const uint16_t* data, int length, TickType_t ticks_to_wait)
+esp_err_t iot_dac_audio_play(const uint16_t *data, int length, TickType_t ticks_to_wait)
 {
     size_t bytes_write = 0;
 #ifdef CONFIG_ESP_LYRAT_V4_3_BOARD
-    uint16_t *data_out = malloc(length*2);
-    for (int i = 0; i < length/2; i++) {
-        data_out[2*i] = data[i];
-        data_out[2 *i + 1] = data[i];
+    uint16_t *data_out = malloc(length * 2);
+    for (int i = 0; i < length / 2; i++)
+    {
+        data_out[2 * i] = data[i];
+        data_out[2 * i + 1] = data[i];
     }
-    i2s_write(0, (const char*) data_out, length*2, &bytes_write, ticks_to_wait);
+    i2s_write(0, (const char *)data_out, length * 2, &bytes_write, ticks_to_wait);
     free(data_out);
 #elif defined CONFIG_ESP_LYRAT_MINI_V1_1_BOARD
-    i2s_write(0, (const char*) data, length, &bytes_write, ticks_to_wait);
+    i2s_write(0, (const char *)data, length, &bytes_write, ticks_to_wait);
 #endif
     i2s_zero_dma_buffer(I2S_NUM_0);
     return ESP_OK;
 }
-
-
 
 // WakeNet
 static const esp_wn_iface_t *wakenet = &WAKENET_MODEL;
@@ -151,6 +162,8 @@ void wakenetTask(void *arg)
     vTaskDelete(NULL);
 }
 
+void self_testing_in_Task(void *arg);
+void self_testing_out_Task(void *arg);
 
 void app_main()
 {
@@ -158,7 +171,7 @@ void app_main()
 
     led_init(LED_GPIO);
 
-    ESP_LOGI(TAG,"project version :%s",system_get_sdk_version());
+    ESP_LOGI(TAG, "project version :%s", system_get_sdk_version());
 
     codec_init();
     aec_rb = rb_init(BUFFER_PROCESS, 8 * 1024, 1, NULL);

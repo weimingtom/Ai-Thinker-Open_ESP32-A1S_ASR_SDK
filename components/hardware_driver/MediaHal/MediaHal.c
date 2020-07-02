@@ -46,12 +46,12 @@
     }
 
 #if (defined CONFIG_CODEC_CHIP_IS_AC101)
-#define IIS_SCLK                    5
-#define IIS_LCLK                    25
-#define IIS_DSIN                    26
-#define IIS_DOUT                    35
-#define GPIO_PA_EN                  GPIO_NUM_21
-#endif 
+#define IIS_SCLK 5
+#define IIS_LCLK 25
+#define IIS_DSIN 26
+#define IIS_DOUT 35
+#define GPIO_PA_EN GPIO_NUM_21
+#endif
 
 #define I2S_OUT_VOL_DEFAULT 60
 #define SUPPOERTED_BITS 16
@@ -75,6 +75,14 @@ i2s_config_t i2s_config = {
     .bits_per_sample = SUPPOERTED_BITS,
 #ifdef CONFIG_ESP_LYRAT_V4_3_BOARD
     .channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT,
+#elif defined CONFIG_AI_ESP32_AUDIO_KIT_V2_2_BOARD
+
+#ifdef CONFIG_CODEC_CHIP_IS_ES8388
+    .channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT,
+#elif defined CONFIG_CODEC_CHIP_IS_AC101
+    .channel_format = I2S_CHANNEL_FMT_ONLY_LEFT,
+#endif
+
 #else
     .channel_format = I2S_CHANNEL_FMT_ONLY_LEFT,
 #endif
@@ -96,8 +104,7 @@ const i2s_pin_config_t i2s_pin = {
     .bck_io_num = IIS_SCLK,
     .ws_io_num = IIS_LCLK,
     .data_out_num = IIS_DSIN,
-    .data_in_num = IIS_DOUT
-};
+    .data_in_num = IIS_DOUT};
 
 #ifdef CONFIG_USE_ES7243
 const i2s_pin_config_t i2s1_pin = {
