@@ -7,7 +7,9 @@
 */
 #include "system_lib.h"
 
+#include "my_led.h"
 #include "my_tcp_server.h"
+
 #include "cJSON.h"
 #include "speech_commands_action.h"
 
@@ -79,10 +81,12 @@ bool speech_commands_action(int command_id)
     case 5:
         printf("打开客厅的灯\n");
         open_light(50000);
+        led_on(LED_GPIO2);
         break;
     case 6:
         printf("关闭客厅的灯\n");
         close_light(50000);
+        led_off(LED_GPIO2);
         break;
     case 7:
         printf("打开卧室的灯\n");

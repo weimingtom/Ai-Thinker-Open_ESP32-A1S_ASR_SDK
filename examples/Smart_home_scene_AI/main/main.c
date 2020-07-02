@@ -12,6 +12,7 @@
 #include "my_nvs.h"
 #include "my_smartconfig.h"
 #include "my_tcp_server.h"
+#include "my_led.h"
 
 #include "residual.h"
 #include "household_food.h"
@@ -20,44 +21,8 @@
 #include "wake_up_prompt_tone.h"
 #include "speech_commands_action.h"
 
-#define LED_GPIO 22
-
 static const char *TAG = "main";
 
-void led_init(int gpio)
-{
-    gpio_config_t io_conf;
-    io_conf.intr_type = (gpio_int_type_t)GPIO_PIN_INTR_DISABLE;
-    io_conf.mode = GPIO_MODE_OUTPUT;
-    io_conf.pull_up_en = (gpio_pullup_t)1;
-
-    uint64_t test = ((uint64_t)1 << gpio);
-    io_conf.pin_bit_mask = test;
-    gpio_config(&io_conf);
-#ifdef CONFIG_AI_ESP32_AUDIO_KIT_V2_2_BOARD
-    gpio_set_level(gpio, true);
-#else
-    gpio_set_level(gpio, false);
-#endif
-}
-
-void led_on(int gpio)
-{
-#ifdef CONFIG_AI_ESP32_AUDIO_KIT_V2_2_BOARD
-    gpio_set_level(gpio, false);
-#else
-    gpio_set_level(gpio, true);
-#endif
-}
-
-void led_off(int gpio)
-{
-#ifdef CONFIG_AI_ESP32_AUDIO_KIT_V2_2_BOARD
-    gpio_set_level(gpio, true);
-#else
-    gpio_set_level(gpio, false);
-#endif
-}
 typedef struct
 {
     char *name;
@@ -130,7 +95,7 @@ void wakenetTask(void *arg)
                 // iot_dac_audio_play(playlist[4].data, playlist[4].length, portMAX_DELAY);
                 // vTaskDelay(1000 / portTICK_PERIOD_MS);
                 printf("-----------------LISTENING-----------------\n\n");
-                led_on(LED_GPIO);
+                led_on(LED_GPIO1);
             }
         }
         else
@@ -154,7 +119,7 @@ void wakenetTask(void *arg)
                 }
 
                 printf("\n-----------awaits to be waken up-----------\n");
-                led_off(LED_GPIO);
+                led_off(LED_GPIO1);
             }
         }
         chunks++;
@@ -169,7 +134,8 @@ void app_main()
 {
     init_nvs();
 
-    led_init(LED_GPIO);
+    led_init(LED_GPIO1);
+    led_init(LED_GPIO2);
 
     ESP_LOGI(TAG, "project version :%s", system_get_sdk_version());
 

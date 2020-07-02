@@ -57,4 +57,3 @@
 #include "recsrc.h"
 #include "ringbuf.h"
 #include "speech_commands_action.h"
-
